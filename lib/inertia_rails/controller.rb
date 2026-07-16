@@ -80,6 +80,7 @@ module InertiaRails
     end
 
     def redirect_to(options = {}, response_options = {})
+      mark_full_page_redirect(response_options) if response_options.dig(:inertia, :full_page)
       capture_inertia_session_options(response_options)
       super
     end
@@ -188,8 +189,6 @@ module InertiaRails
     def capture_inertia_session_options(options)
       return unless (inertia = options[:inertia])
 
-      mark_full_page_redirect(options) if inertia[:full_page]
-
       if (inertia_errors = inertia[:errors])
         if inertia_errors.respond_to?(:to_hash)
           session[:inertia_errors] = inertia_errors.to_hash
@@ -213,7 +212,7 @@ module InertiaRails
                              'a full page visit always issues a GET, so it cannot preserve the HTTP method.'
       end
 
-      request.env['inertia_rails.full_page_redirect'] = true
+      request.env[Middleware::FULL_PAGE_REDIRECT_KEY] = true
     end
   end
 end
